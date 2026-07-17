@@ -33,7 +33,7 @@ _AUTH_TAG_SIZE = 16
 @dataclass(frozen=True)
 class CipherConfig:
 
-    # suite: Which algorithm to use: Change to CHACHA20_POLY1305 if running on non-x86 hardware           
+    # Change to CHACHA20_POLY1305 if running on non-x86 hardware           
     suite: CipherSuite = CipherSuite.AES256_GCM
 
 class AeadCipher:
@@ -47,7 +47,6 @@ class AeadCipher:
     def generate_key(self) -> bytes:
        return os.urandom(self._key_size)
         
-    # encrypt + scramble blob
     def encrypt(
         self,
         key: bytes,
@@ -81,7 +80,6 @@ class AeadCipher:
         ciphertext, nonce, auth_tag = self.encrypt(key, plaintext, aad)
         return nonce + ciphertext + auth_tag
         
-    # decrypt + de-scramble blob
     def decrypt(
         self,
         key: bytes,
@@ -117,8 +115,7 @@ class AeadCipher:
         blob: bytes,
         aad: bytes = b"",
     ) -> bytes:  
-
-        # slicing.
+        
         nonce = blob[:self._nonce_size]
         auth_tag = blob[-self._auth_tag_size:]  
         ciphertext = blob[self._nonce_size:-self._auth_tag_size]
