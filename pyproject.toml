@@ -1,0 +1,32 @@
+[project]
+name = "aegis-vault"
+version = "0.1.0"
+description = "Zero-cloud encrypted file storage with envelope encryption"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "M. Zeeshan"},
+]
+dependencies = [
+    "cryptography>=41.0.0",
+    "click>=8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.scripts]
+aegis = "aegis.cli:cli"
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

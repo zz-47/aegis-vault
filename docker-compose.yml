@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  vault:
+    build: .
+    volumes:
+      - vault-data:/data
+    command: ["--help"]
+
+volumes:
+  vault-data:
