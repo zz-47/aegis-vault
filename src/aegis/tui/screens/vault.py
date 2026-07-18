@@ -56,26 +56,33 @@ class VaultScreen(Screen):
     def on_mount(self):
         table = self.query_one("#vault-table", DataTable)
         table.add_columns("Namespace", "Item")
+        self._all_items = []
         self._load_items()
 
     def _load_items(self):
         from aegis.crypt_storage import AegisVault
 
         app = self.app
-        if not app.vault:
+        if not self.app.vault:
             return
-        table = self.query_one("#vault-table", DataTable)
-        table.clear()
+        self._all_items = []
         for ns in ["personal", "work", "archive"]:
             try:
                 items = app.vault.list_items(ns)
                 for item in items:
-                    table.add_row(ns, item)
+                    self._all_items.append((ns, item))
             except Exception:
                 pass
+        self._populate_table(self._all_items)
         self.query_one("#status-bar", Static).update(
-            f"{table.row_count} entries loaded"
+            f"{len(self._all_items)} entries loaded"
         )
+
+    def _populate_table(self, items):
+        table = self.query_one("#vault-table", DataTable)
+        table.clear()
+        for ns, item_id in items:
+            table.add_row(ns, item_id)
 
     @on(DataTable.RowSelected)
     def show_entry(self, event):
@@ -95,11 +102,18 @@ class VaultScreen(Screen):
     @on(Input.Changed, "#search-bar")
     def filter_items(self, event):
         query = event.value.lower()
+        if not query:
+            self._populate_table(self._all_items)
+        else:
+            filtered = [
+                (ns, item) for ns, item in self._all_items
+                if query in ns.lower() or query in item.lower()
+            ]
+            self._populate_table(filtered)
         table = self.query_one("#vault-table", DataTable)
-        for row_key in table.rows:
-            row = table.get_row(row_key)
-            visible = query in row[0].lower() or query in row[1].lower()
-            table.set_row_visible(row_key, visible)
+        self.query_one("#status-bar", Static).update(
+            f"{table.row_count} entries"
+        )
 
     def action_focus_search(self):
         self.query_one("#search-bar", Input).focus()

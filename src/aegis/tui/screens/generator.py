@@ -5,7 +5,7 @@ import string
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Label, Input, Button, Slider
+from textual.widgets import Static, Label, Input, Button
 from textual.containers import Vertical, Horizontal
 from textual import on
 from textual.binding import Binding
@@ -17,6 +17,7 @@ class GeneratorScreen(Screen):
     CSS = """
     GeneratorScreen { padding: 1 2; }
     #length-display { width: 100%; margin-bottom: 1; text-align: center; }
+    #length-input { width: 100%; max-width: 10; margin-bottom: 1; }
     #generated { width: 100%; margin: 1 0; }
     #copy-btn { margin-top: 1; }
     """
@@ -30,13 +31,11 @@ class GeneratorScreen(Screen):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Label("[bold]Password Generator[/]")
-            yield Label(f"Length: {self.length}", id="length-display")
-            yield Slider(
-                id="length-slider",
-                value=self.length,
-                min=8,
-                max=64,
-                show_value=False,
+            yield Label("Length:", id="length-display")
+            yield Input(
+                value=str(self.length),
+                id="length-input",
+                type="integer",
             )
             yield Input(
                 value=self._generate(),
@@ -50,10 +49,12 @@ class GeneratorScreen(Screen):
         alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
         return "".join(secrets.choice(alphabet) for _ in range(self.length))
 
-    @on(Slider.Changed, "#length-slider")
+    @on(Input.Changed, "#length-input")
     def update_length(self, event):
-        self.length = int(event.value)
-        self.query_one("#length-display", Label).update(f"Length: {self.length}")
+        try:
+            self.length = max(8, min(64, int(event.value)))
+        except (ValueError, TypeError):
+            return
         self.query_one("#generated", Input).value = self._generate()
 
     @on(Button.Pressed, "#regen-btn")
@@ -62,9 +63,9 @@ class GeneratorScreen(Screen):
 
     @on(Button.Pressed, "#copy-btn")
     def copy_password(self):
-        import pyperclip
         pw = self.query_one("#generated", Input).value
         try:
+            import pyperclip
             pyperclip.copy(pw)
             self.notify("Copied to clipboard (clears in 30s)", severity="success")
         except Exception:

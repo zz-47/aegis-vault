@@ -53,6 +53,18 @@ Seal is an open-source demonstration of these concepts and may lack the high-tie
 
 The creator is open to **business audits, security reviews, and tailored deployments** for organizations that need these capabilities in production. If you are exploring on-premise encryption for your team, reach out.
 
+## Interfaces
+
+Seal has three interfaces that all operate on the same vault:
+
+| Interface | Launch | Best for |
+|-----------|--------|----------|
+| **CLI** | `seal save`, `seal load`, etc. | Scripting, automation, quick operations |
+| **TUI** | `seal tui` | Interactive browsing, searching, password generation |
+| **GUI** | `seal gui` | Desktop users, visual vault management |
+
+See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for complete usage instructions.
+
 ## What It Does
 
 ```
@@ -79,20 +91,32 @@ Each file gets its own Data Encryption Key (DEK). The DEK is wrapped under a Mas
 ## Quick Start
 
 ```bash
-pip install aegis-vault
+# Install from source
+pip install -e ".[dev]"
 
 # Initialize a vault
-aegis init --passphrase "your-secret" --vault ./my-vault
+seal init --path ./my-vault --passphrase "your-secret"
 
-# Store a file
-aegis store --vault ./my-vault --namespace personal --id doc1 --file secret.txt
+# Save data
+seal save -n personal -i doc1 -d '{"username":"alice","password":"s3cret"}'
 
-# Retrieve it
-aegis retrieve --vault ./my-vault --namespace personal --id doc1 --output restored.txt
+# Load it back
+seal load -n personal -i doc1
 
-# List stored items
-aegis list --vault ./my-vault --namespace personal
+# List items
+seal list -n personal
+
+# Verify integrity
+seal verify
+
+# Launch TUI (interactive terminal browser)
+seal tui
+
+# Launch GUI (desktop window)
+seal gui
 ```
+
+See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for the full reference covering all CLI commands, TUI, GUI, and Python API.
 
 ## Docker
 
@@ -140,13 +164,13 @@ data = vault.load("personal", "doc1")
 
 ## Testing
 
-108 tests across 10 test files covering encryption, key management, storage, audit, canary detection, sharing, biometric, compliance reports, atomic writes, data leak prevention, and attack/robustness scenarios.
+144 tests across 12 test files covering encryption, key management, storage, audit, canary detection, sharing, biometric, compliance reports, CLI integration, atomic writes, data leak prevention, and attack/robustness scenarios.
 
 ```bash
 # Install dev dependencies
 pip install -e ".[dev]"
 
-# Run all 108 tests
+# Run all 144 tests
 python -m pytest tests/ -v
 
 # Run a specific test module
