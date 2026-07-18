@@ -1,7 +1,7 @@
 [project]
-name = "aegis-vault"
+name = "seal"
 version = "0.1.0"
-description = "Zero-cloud encrypted file storage with envelope encryption"
+description = "Zero-cloud encrypted file storage with tamper-evident audit, canary detection, and compliance reports"
 readme = "README.md"
 license = {text = "BSL-1.1"}
 requires-python = ">=3.10"
@@ -11,6 +11,9 @@ authors = [
 dependencies = [
     "cryptography>=41.0.0",
     "click>=8.0",
+    "rich>=13.0",
+    "rich-click>=1.8",
+    "textual>=0.40",
 ]
 
 [project.optional-dependencies]
@@ -19,7 +22,7 @@ dev = [
 ]
 
 [project.scripts]
-aegis = "aegis.cli:cli"
+seal = "aegis.cli:cli"
 
 [build-system]
 requires = ["setuptools>=68.0"]
