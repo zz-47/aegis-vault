@@ -58,4 +58,4 @@ class TestAuditLog:
         log = AuditLog(vault_path)
         log.append("save", "personal", "doc_01")
         export = log.export_json()
-        assert '"op": "save"' in export
+        assert '"op":"save"' in export

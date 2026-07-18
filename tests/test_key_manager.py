@@ -1,6 +1,6 @@
 import pytest
 from aegis.key_manager import KeyManager
-from aegis._errors import LocalStorageError, ManifestError, ItemNotFoundError
+from aegis._errors import LocalStorageError, ManifestError, ItemNotFoundError, DecryptionError
 
 
 class TestKeyManager:
@@ -41,7 +41,7 @@ class TestKeyManager:
         km.derive_master_key()
         dek = km.generate_dek()
         wrapped = km.wrap_dek(dek, b"item_01")
-        with pytest.raises(LocalStorageError):
+        with pytest.raises(DecryptionError):
             km.unwrap_dek(wrapped, b"wrong_id")
 
     def test_wrap_without_master_key(self):

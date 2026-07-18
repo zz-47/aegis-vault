@@ -85,6 +85,14 @@ data = store.load("personal", "doc1")
 | `work` | Work-related files |
 | `archive` | Long-term storage |
 
+# RUN-TESTS
+
+Run test in your terminal :
+
+```bash
+python -m pytest tests/ -v
+```
+
 ## Benchmarks
 
 Run benchmarks on your hardware:

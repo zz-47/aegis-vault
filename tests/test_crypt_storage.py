@@ -68,8 +68,9 @@ class TestAegisVault:
         assert items == []
 
     def test_tampered_ciphertext(self, vault, vault_path):
+        from pathlib import Path
         vault.save("personal", "doc_01", {"data": "intact"})
-        path = vault_path / "personal" / "doc_01.enc"
+        path = Path(vault_path) / "personal" / "doc_01.enc"
         original = path.read_bytes()
         tampered = bytearray(original)
         tampered[20] ^= 0xFF
@@ -86,8 +87,9 @@ class TestAegisVault:
         assert loaded == {"persist": True}
 
     def test_secure_delete_overwrites(self, vault, vault_path):
+        from pathlib import Path
         vault.save("personal", "doc_01", {"sensitive": True})
-        path = vault_path / "personal" / "doc_01.enc"
+        path = Path(vault_path) / "personal" / "doc_01.enc"
         original_bytes = path.read_bytes()
         vault.delete("personal", "doc_01")
         assert not path.exists()
