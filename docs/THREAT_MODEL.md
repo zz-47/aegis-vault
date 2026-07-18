@@ -1,4 +1,4 @@
-# Threat Model: Aegis Vault
+# Threat Model: Seal (Aegis Vault)
 
 ## 1. Adversary Profile
 
@@ -69,3 +69,24 @@
 2. The `cryptography` library's AES-GCM/ChaCha20 implementations are correct
 3. The OS `fsync()` call actually flushes to persistent storage
 4. The user chooses a passphrase with sufficient entropy
+
+## 5. Threats Covered by Test Suite
+
+| Threat | Test ID | Test |
+|--------|---------|------|
+| Wrong passphrase | RC-01 | `test_wrong_passphrase_fails_load` |
+| Cross-namespace file swap | RC-02 | `test_cross_namespace_aad_rejects` |
+| Cross-item file swap | RC-03 | `test_cross_item_aad_rejects` |
+| Tampered ciphertext | RC-04, VS-10, C-05 | `test_tampered_ciphertext_fails_decrypt` |
+| Truncated ciphertext | RC-05 | `test_truncated_ciphertext_fails_decrypt` |
+| Corrupted manifest | RC-06 | `test_corrupted_manifest_raises` |
+| Deleted manifest | RC-07 | `test_missing_manifest_loads_empty` |
+| Corrupted audit log | RC-08, AL-03 | `test_corrupted_audit_log_verify_fails` |
+| Canary trigger | CA-04 | `test_monitor_once_raises` |
+| Ransomware entropy spike | CA-06, CA-07 | Shannon entropy bounds |
+| Plaintext on disk | DL-01–DL-06 | All data leak tests |
+| Nonce reuse | C-12 | `test_multiple_encryptions_unique_nonces` |
+| Wrong AAD context | C-06 | `test_wrong_aad_fails` |
+| Audit chain tamper | AL-03, RC-16 | `test_audit_log_chain_break` |
+
+See [tests/TEST_DOCUMENTATION.md](../tests/TEST_DOCUMENTATION.md) for the full 108-test catalog.

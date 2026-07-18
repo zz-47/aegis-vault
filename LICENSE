@@ -1,21 +1,105 @@
-MIT License
+BUSINESS SOURCE LICENSE 1.1
 
 Copyright (c) 2026 M. Zeeshan
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Licensor: M. Zeeshan
+Change Date: 2030-07-18
+Change License: GNU Affero General Public License v3.0 or later
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. Definitions.
+
+  "License" means the terms and conditions for use, reproduction, and
+  distribution as defined in Section 1 through Section 9 of this document.
+
+  "Licensor" means the copyright owner or entity authorized by the copyright
+  owner that is granting the License.
+
+  "Legal Entity" means the acting legal entity and all other entities that
+  control, are controlled by, or are under common control with that entity.
+
+  "Source Code" means the preferred form for making modifications to it.
+
+  "Object Code" means any non-source form of the Software.
+
+  "Available Component" means any source code, object code, or supporting
+  documentation included with the Software.
+
+  "Production Use" means any use of the Software in a commercial, government,
+  or organizational environment where the Software provides core functionality
+  to more than 25 end users or handles sensitive, proprietary, or confidential
+  data.
+
+  "Evaluation Use" means use of the Software solely for internal evaluation,
+  testing, development, and non-production purposes.
+
+  "Designated Product" means the software identified by the Licensor as the
+  subject of this License, which is the Seal (Aegis Vault) encrypted file
+  storage system.
+
+2. Grant of Rights.
+
+  (a) Subject to the terms of this License, the Licensor hereby grants to
+  you a perpetual, worldwide, non-exclusive, non-transferable, royalty-free
+  license to reproduce, prepare derivative works of, publicly display,
+  publicly perform, and distribute the Designated Product and such
+  derivative works, solely for Evaluation Use.
+
+  (b) For Production Use, you must obtain a separate written license from
+  the Licensor. Contact the Licensor at the email address associated with
+  the copyright to negotiate production deployment terms.
+
+  (c) The Licensor is open to business audits, security reviews, and
+  tailored production deployments. Reach out to discuss your requirements.
+
+3. Change Date.
+
+  On the Change Date, this License shall automatically convert to the
+  GNU Affero General Public License v3.0 or later (the "Change License").
+  All terms of this License shall remain in effect until the Change Date.
+  After the Change Date, the Change License shall govern all use,
+  reproduction, and distribution of the Designated Product.
+
+4. Attribution.
+
+  You must retain all copyright, patent, trademark, and attribution notices
+  from the Source Code of the Designated Product in any derivative works.
+
+5. Redistribution.
+
+  You may distribute the Designated Product in binary form, provided that
+  (a) you include a copy of this License, (b) you retain all copyright
+  notices, and (c) you do not use the Licensor's name, trademark, or
+  product names to endorse or promote derivative works without written
+  permission.
+
+6. Trademarks.
+
+  This License does not grant permission to use the trade names, trademarks,
+  service marks, or product names of the Licensor.
+
+7. Disclaimer of Warranty.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+  THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER
+  IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+8. Limitation of Liability.
+
+  IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+9. Termination.
+
+  The License granted hereunder shall terminate automatically if you breach
+  any term of this License. Upon termination, you must cease all use of the
+  Designated Product and destroy all copies.
