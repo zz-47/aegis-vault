@@ -126,7 +126,7 @@ class AeadCipher:
 
         if len(key) != self._key_size:
             raise LocalStorageError(
-                f"Key must be exactly {self._key_size}"
+                f"Key must be exactly {self._key_size} bytes"
                 f" got {len(key)} bytes.",
                 hint=f"Call generate_key() to create a valid"
                     f" {self._key_size}-byte key.",

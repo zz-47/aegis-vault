@@ -33,7 +33,7 @@ class AegisError(Exception):
         super().__init__(self.message)
 
     def __str__(self) -> str:
-        TEXT = f"[{self.CODE}] {self.message}"
+        text = f"[{self.code}] {self.message}"
         if self.hint:
             text += f" Hint: {self.hint}"
         return text
