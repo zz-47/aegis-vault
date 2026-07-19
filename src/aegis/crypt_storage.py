@@ -23,9 +23,10 @@ class AegisVault:
         passphrase: str,
         km_overrides: Optional[dict] = None,
         secure_delete: bool = True,
+        cipher_suite: Optional[str] = None,
     ) -> None:
         self._base_path = Path(base_path).resolve()
-        self._km = KeyManager(passphrase, overrides=km_overrides)
+        self._km = KeyManager(passphrase, overrides=km_overrides, cipher_suite=cipher_suite)
         self._secure_delete = secure_delete
         self._keys_dir = self._base_path / _MANIFEST_DIR
         self._keys_dir.mkdir(parents=True, exist_ok=True)

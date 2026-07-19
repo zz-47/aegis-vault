@@ -1,6 +1,6 @@
 # Seal — User Guide
 
-Seal is a zero-cloud encrypted file vault with tamper-evident audit, canary detection, and compliance reports. It has three interfaces: **CLI**, **TUI** (terminal UI), and **GUI** (desktop window). All three operate on the same vault directory.
+Seal is a zero-cloud encrypted file vault with tamper-evident audit, canary detection, and compliance reports. It has two interfaces: **CLI** and **TUI** (terminal UI). Both operate on the same vault directory.
 
 ---
 
@@ -230,10 +230,6 @@ seal share remove -u <user-id>
 
 Launch the interactive terminal UI. See [TUI section](#tui-terminal-user-interface).
 
-### `seal gui`
-
-Launch the desktop GUI. See [GUI section](#gui-desktop-application).
-
 ### `seal version`
 
 ```bash
@@ -297,51 +293,6 @@ Press `Ctrl+V` to check:
 - Canary file status (entropy-based tamper detection)
 
 Results appear as a notification toast.
-
----
-
-## GUI (Desktop Application)
-
-The GUI is a tkinter desktop window with a tree view, entry form, and password generator.
-
-### Launch
-
-```bash
-seal gui
-seal gui --path ./my-vault
-```
-
-### Login Dialog
-
-On launch, a login dialog appears. Enter your passphrase and click **OK**.
-
-### Main Window
-
-The main window has:
-
-- **Tree view** (left): Hierarchical view of namespaces and entries
-- **Entry form** (right): View/edit selected entry as JSON
-- **Menu bar**: File, Tools, Help menus
-
-### Menu Actions
-
-| Menu | Action | Description |
-|------|--------|-------------|
-| File → New Entry | `Ctrl+N` | Add a new entry |
-| File → Refresh | `Ctrl+R` | Reload vault contents |
-| File → Exit | `Ctrl+Q` | Close application |
-| Tools → Verify | — | Check audit chain + canary status |
-| Tools → Generate Password | `Ctrl+G` | Open password generator |
-| Tools → Deploy Canaries | — | Deploy ransomware decoy files |
-| Help → About | — | Show version info |
-
-### Password Generator
-
-Opens a dialog with:
-- Length slider (8–64)
-- Generated password display
-- Copy to clipboard button
-- Regenerate button
 
 ---
 
@@ -458,10 +409,6 @@ The item doesn't exist in the specified namespace. Run `seal list -n <namespace>
 ### TUI doesn't launch
 
 Ensure you're in a real terminal (Windows Terminal, PowerShell, not VS Code integrated terminal). Textual requires a proper terminal emulator.
-
-### GUI doesn't launch
-
-Ensure you have a display server running. On Windows, this works out of the box. On Linux, you may need `python3-tk` installed.
 
 ### Canary false positives
 

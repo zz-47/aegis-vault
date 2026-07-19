@@ -49,7 +49,8 @@ class TestCLIHelp:
         result = runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
         for cmd in ["init", "save", "load", "list", "delete", "verify",
-                     "canary", "report", "share", "tui", "gui", "version"]:
+                     "canary", "report", "share", "tui", "generate",
+                     "keygen", "doctor", "version"]:
             assert cmd in result.output
 
 
@@ -98,6 +99,27 @@ class TestCLISave:
         assert "Saved" in result.output
         assert Path(vault_path, "work", "config.enc").exists()
 
+    def test_save_kv_pairs(self, runner, vault_path):
+        args = _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "kv-item",
+            "--kv", "user=alice", "--kv", "pass=s3cret",
+        ]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "Saved" in result.output
+        assert Path(vault_path, "personal", "kv-item.enc").exists()
+
+    def test_save_at_file(self, runner, vault_path, tmp_path):
+        json_file = tmp_path / "at_input.json"
+        json_file.write_text('{"from_at_file": true}')
+        args = _vault_args(vault_path) + [
+            "save", "-n", "work", "-i", "at-item",
+            "-d", f"@{json_file}",
+        ]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "Saved" in result.output
+
     def test_save_invalid_namespace(self, runner, vault_path):
         args = _vault_args(vault_path) + [
             "save", "-n", "bogus", "-i", "doc1", "-d", '{"x":1}',
@@ -115,7 +137,16 @@ class TestCLILoad:
         ]
         result = runner.invoke(cli, args)
         assert result.exit_code == 0
-        parsed = json.loads(result.output)
+        lines = result.output.strip().split("\n")
+        json_lines = []
+        for line in lines:
+            if line.strip().startswith("{") or line.strip().startswith("}") or line.strip().startswith('"'):
+                json_lines.append(line)
+            elif line.strip().startswith("["):
+                json_lines.append(line)
+            elif json_lines:
+                break
+        parsed = json.loads("\n".join(json_lines))
         assert parsed["user"] == "bob"
         assert parsed["token"] == "abc"
 
@@ -248,27 +279,27 @@ class TestCLIVerify:
 class TestCLICanary:
 
     def test_canary_deploy(self, runner, vault_path):
-        args = _vault_args(vault_path) + ["canary", "deploy"]
+        args = _vault_args(vault_path) + ["canary", "deploy", "-y"]
         result = runner.invoke(cli, args)
         assert result.exit_code == 0
         assert "Deployed" in result.output
 
     def test_canary_deploy_custom_names(self, runner, vault_path):
         args = _vault_args(vault_path) + [
-            "canary", "deploy", "--names", "fake.xlsx,fake.pdf",
+            "canary", "deploy", "--names", "fake.xlsx,fake.pdf", "-y",
         ]
         result = runner.invoke(cli, args)
         assert result.exit_code == 0
 
     def test_canary_check_clean(self, runner, vault_path):
-        runner.invoke(cli, _vault_args(vault_path) + ["canary", "deploy"])
+        runner.invoke(cli, _vault_args(vault_path) + ["canary", "deploy", "-y"])
         args = _vault_args(vault_path) + ["canary", "check"]
         result = runner.invoke(cli, args)
         assert result.exit_code == 0
         assert "intact" in result.output.lower()
 
     def test_canary_check_tampered(self, runner, vault_path):
-        runner.invoke(cli, _vault_args(vault_path) + ["canary", "deploy"])
+        runner.invoke(cli, _vault_args(vault_path) + ["canary", "deploy", "-y"])
         from aegis.canary import CanaryManager
         mgr = CanaryManager(vault_path)
         assert len(mgr._canaries) > 0
@@ -281,7 +312,7 @@ class TestCLICanary:
         assert "TRIGGERED" in result.output
 
     def test_canary_remove(self, runner, vault_path):
-        runner.invoke(cli, _vault_args(vault_path) + ["canary", "deploy"])
+        runner.invoke(cli, _vault_args(vault_path) + ["canary", "deploy", "-y"])
         args = _vault_args(vault_path) + ["canary", "remove"]
         result = runner.invoke(cli, args)
         assert result.exit_code == 0

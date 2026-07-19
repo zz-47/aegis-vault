@@ -73,6 +73,8 @@ def build(onefile: bool = False):
         "aegis.tui.widgets", "aegis.tui.widgets.strength",
         "aegis.gui", "aegis.gui.app",
         "tkinter", "tkinter.ttk", "tkinter.messagebox", "tkinter.simpledialog",
+        "ttkbootstrap", "ttkbootstrap.constants", "ttkbootstrap.dialogs",
+        "ttkbootstrap.scrolled",
     ]
     for h in hidden:
         cmd.extend(["--hidden-import", h])

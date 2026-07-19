@@ -53,10 +53,19 @@ def _b64_decode(s: str) -> bytes:
 
 class KeyManager:
 
-    def __init__(self, passphrase: str, overrides: Optional[dict] = None):
+    def __init__(self, passphrase: str, overrides: Optional[dict] = None,
+                 cipher_suite: Optional[str] = None):
+        from aegis.cipher import CipherConfig, CipherSuite
+
         self._passphrase = passphrase.encode("utf-8")
         self._master_key: Optional[bytes] = None
-        self._cipher = AeadCipher()
+
+        if cipher_suite == "chacha20":
+            config = CipherConfig(suite=CipherSuite.CHACHA20_POLY1305)
+        else:
+            config = CipherConfig()
+        self._cipher = AeadCipher(config)
+
         self._dek_cache: dict[bytes, bytes] = {}
         self._salt: Optional[bytes] = None
         self._pbkdf2_iterations = (overrides or {}).get("pbkdf2_iterations", _PBKDF2_ITERATIONS)

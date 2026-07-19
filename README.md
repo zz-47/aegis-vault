@@ -55,13 +55,12 @@ The creator is open to **business audits, security reviews, and tailored deploym
 
 ## Interfaces
 
-Seal has three interfaces that all operate on the same vault:
+Seal has two interfaces that both operate on the same vault:
 
 | Interface | Launch | Best for |
 |-----------|--------|----------|
 | **CLI** | `seal save`, `seal load`, etc. | Scripting, automation, quick operations |
 | **TUI** | `seal tui` | Interactive browsing, searching, password generation |
-| **GUI** | `seal gui` | Desktop users, visual vault management |
 
 See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for complete usage instructions.
 
@@ -111,12 +110,9 @@ seal verify
 
 # Launch TUI (interactive terminal browser)
 seal tui
-
-# Launch GUI (desktop window)
-seal gui
 ```
 
-See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for the full reference covering all CLI commands, TUI, GUI, and Python API.
+See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for the full reference covering all CLI commands, TUI, and Python API.
 
 ## Docker
 
@@ -164,7 +160,7 @@ data = vault.load("personal", "doc1")
 
 ## Testing
 
-144 tests across 12 test files covering encryption, key management, storage, audit, canary detection, sharing, biometric, compliance reports, CLI integration, atomic writes, data leak prevention, and attack/robustness scenarios.
+146 tests across 12 test files covering encryption, key management, storage, audit, canary detection, sharing, biometric, compliance reports, CLI integration, atomic writes, data leak prevention, and attack/robustness scenarios.
 
 ```bash
 # Install dev dependencies

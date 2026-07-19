@@ -36,7 +36,6 @@ packaging/dist/
 PyInstaller traces imports from `aegis.cli:cli` and bundles:
 - All `aegis` modules (cipher, key_manager, audit, canary, report, sharing, biometric)
 - TUI screens and widgets (Textual)
-- GUI (tkinter)
 - Crypto libraries (cryptography C extensions)
 
 The build is `--onedir` by default (faster startup). Use `--onefile` for a single
@@ -46,9 +45,9 @@ executable that extracts on each run.
 
 | Platform | Notes |
 |----------|-------|
-| Windows | `.exe` extension, tkinter bundled with Python |
-| macOS | May need `--windowed` if GUI-only; we use `console=True` for CLI |
-| Linux | tkinter may need `python3-tk` system package |
+| Windows | `.exe` extension |
+| macOS | Console application |
+| Linux | Standard terminal application |
 
 PyInstaller **cannot cross-compile**. Build on each target platform.
 
