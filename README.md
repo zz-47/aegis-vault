@@ -1,4 +1,4 @@
-# Seal — Local Vault
+# Seal - Vault
 
 **Zero-cloud encrypted file storage with tamper-evident audit, canary detection, and compliance reports.**
 
