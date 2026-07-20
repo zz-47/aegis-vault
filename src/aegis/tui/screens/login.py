@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
@@ -12,7 +13,7 @@ from textual import on, work
 @dataclass
 class LoginSuccess:
     passphrase: str
-    vault_path: str | None
+    vault_path: Path | None
 
 
 class LoginScreen(ModalScreen):
@@ -37,6 +38,11 @@ class LoginScreen(ModalScreen):
     #passphrase-input {
         width: 100%;
     }
+    #strength-label {
+        width: 100%;
+        min-height: 1;
+        margin-top: 0;
+    }
     #login-btn {
         width: 100%;
         margin-top: 1;
@@ -51,15 +57,19 @@ class LoginScreen(ModalScreen):
     }
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._bio_available = self._check_biometric()
+
     def compose(self) -> ComposeResult:
         with Vertical(id="login-box"):
             yield Label("[bold]Seal — Local Vault[/]")
             yield Label("[dim]Enter your master passphrase[/]")
             yield Input(password=True, placeholder="Passphrase", id="passphrase-input")
+            yield Static("", id="strength-label")
             yield Button("Unlock", id="login-btn", variant="primary")
 
-            bio_available = self._check_biometric()
-            if bio_available:
+            if self._bio_available:
                 yield Button("Unlock with Windows Hello", id="bio-btn", variant="success")
 
             yield Button("Save passphrase for next time", id="setup-btn", variant="default")
@@ -71,6 +81,30 @@ class LoginScreen(ModalScreen):
             return bio._has_biometric
         except Exception:
             return False
+
+    def _check_strength(self, pw: str) -> str:
+        if not pw:
+            return ""
+        warnings = []
+        if len(pw) < 8:
+            warnings.append("shorter than 8 characters")
+        if len(pw) < 12:
+            warnings.append("consider 12+ characters")
+        if pw.lower() == pw and pw.isalpha():
+            warnings.append("no uppercase")
+        if pw.isalnum() and not any(ch in pw for ch in "!@#$%^&*()-_+=[]{}|;':\",./<>?"):
+            warnings.append("no special chars")
+        common = {"password", "123456", "qwerty", "letmein", "admin", "welcome"}
+        if pw.lower() in common:
+            warnings.append("commonly used password")
+        if not warnings:
+            return "[green]Strong[/]"
+        return f"[yellow]Weak:[/] {'; '.join(warnings)}"
+
+    @on(Input.Changed, "#passphrase-input")
+    def on_input_changed(self, event: Input.Changed):
+        label = self.query_one("#strength-label", Static)
+        label.update(self._check_strength(event.value))
 
     @on(Button.Pressed, "#login-btn")
     @on(Input.Submitted, "#passphrase-input")
@@ -116,6 +150,9 @@ class LoginScreen(ModalScreen):
             from aegis.biometric import BiometricUnlock
             bio = BiometricUnlock()
             bio.setup(pw)
-            self.notify("Passphrase saved. You can now use Windows Hello.", severity="success")
+            self.notify(
+                "Passphrase saved. You can now use Windows Hello.\nClick Unlock to continue.",
+                severity="success",
+            )
         except Exception as e:
             self.notify(f"Setup failed: {e}", severity="error")

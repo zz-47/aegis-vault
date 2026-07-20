@@ -418,3 +418,126 @@ class TestCLIShare:
         ]
         result = runner.invoke(cli, args)
         assert result.exit_code != 0
+
+
+class TestCLIAudit:
+    def test_audit_show_empty(self, runner, vault_path):
+        args = _vault_args(vault_path) + ["audit", "show"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "No audit entries" in result.output
+
+    def test_audit_show_with_entries(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        args = _vault_args(vault_path) + ["audit", "show"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "save" in result.output
+
+    def test_audit_show_filter_op(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        args = _vault_args(vault_path) + ["audit", "show", "-o", "load"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "save" not in result.output
+
+    def test_audit_show_filter_ns(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "work", "-i", "jira",
+            "--kv", "user=bob", "--kv", "pass=s3cret",
+        ])
+        args = _vault_args(vault_path) + ["audit", "show", "-n", "personal"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "gmail" in result.output
+
+    def test_audit_show_last_n(self, runner, vault_path):
+        for i in range(5):
+            runner.invoke(cli, _vault_args(vault_path) + [
+                "save", "-n", "personal", "-i", f"item{i}",
+                "--kv", "user=test", "--kv", "pass=secret",
+            ])
+        args = _vault_args(vault_path) + ["audit", "show", "--last", "2"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+
+    def test_audit_verify_empty(self, runner, vault_path):
+        args = _vault_args(vault_path) + ["audit", "verify"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "empty" in result.output.lower()
+
+    def test_audit_verify_valid(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        args = _vault_args(vault_path) + ["audit", "verify"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "valid" in result.output.lower()
+
+    def test_audit_verify_broken(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        audit_path = Path(vault_path) / "keys" / "audit.log"
+        lines = audit_path.read_text().splitlines()
+        if lines:
+            last = json.loads(lines[-1])
+            last["hash"] = "0" * 64
+            lines[-1] = json.dumps(last, separators=(",", ":"))
+            audit_path.write_text("\n".join(lines) + "\n")
+        args = _vault_args(vault_path) + ["audit", "verify"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code != 0
+        assert "broken" in result.output.lower()
+
+    def test_audit_export_json(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        args = _vault_args(vault_path) + ["audit", "export", "-F", "json"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "save" in result.output
+
+    def test_audit_export_markdown(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        args = _vault_args(vault_path) + ["audit", "export", "-F", "markdown"]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert "# Audit Log" in result.output
+
+    def test_audit_export_to_file(self, runner, vault_path):
+        runner.invoke(cli, _vault_args(vault_path) + [
+            "save", "-n", "personal", "-i", "gmail",
+            "--kv", "user=alice", "--kv", "pass=secret",
+        ])
+        outfile = str(Path(vault_path) / "export.json")
+        args = _vault_args(vault_path) + ["audit", "export", "-F", "json", "-o", outfile]
+        result = runner.invoke(cli, args)
+        assert result.exit_code == 0
+        assert Path(outfile).exists()
+
+    def test_audit_help(self, runner):
+        result = runner.invoke(cli, ["audit", "--help"])
+        assert result.exit_code == 0
+        assert "show" in result.output
+        assert "export" in result.output
+        assert "verify" in result.output

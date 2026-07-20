@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import json
+import threading
 
 from textual.app import ComposeResult
 from textual.screen import Screen, ModalScreen
 from textual.widgets import DataTable, Static, Input, Button, Label, Select, TextArea
 from textual.containers import Vertical, Horizontal, ScrollableContainer
-from textual import on, work
+from textual import on
 from textual.binding import Binding
+
+from aegis.tui._constants import DEFAULT_NAMESPACES
 
 
 class VaultScreen(Screen):
@@ -44,6 +47,9 @@ class VaultScreen(Screen):
         background: $accent;
         color: $text;
     }
+    #copy-btn {
+        margin-top: 1;
+    }
     """
 
     BINDINGS = [
@@ -51,6 +57,7 @@ class VaultScreen(Screen):
         Binding("ctrl+n", "new_item", "New"),
         Binding("ctrl+e", "edit_item", "Edit"),
         Binding("ctrl+d", "delete_item", "Delete"),
+        Binding("ctrl+g", "generate", "Generate"),
         Binding("escape", "go_back", "Back"),
     ]
 
@@ -65,7 +72,11 @@ class VaultScreen(Screen):
         with Vertical(id="detail"):
             yield Label("Select an entry", id="detail-label")
             yield Static("", id="detail-content")
-        yield Static("Ready", id="status-bar")
+            yield Button("Copy Value", id="copy-btn", variant="primary")
+        yield Static(
+            "Ctrl+N New  Ctrl+E Edit  Ctrl+D Delete  Ctrl+F Search  Ctrl+G Generate  Esc Back",
+            id="status-bar",
+        )
 
     def on_mount(self):
         table = self.query_one("#vault-table", DataTable)
@@ -74,18 +85,23 @@ class VaultScreen(Screen):
         self._selected = None
         self._load_items()
 
+    def on_screen_resume(self) -> None:
+        self._load_items()
+
     def _load_items(self):
         app = self.app
         if not self.app.vault:
             return
         self._all_items = []
-        for ns in ["personal", "work", "archive"]:
+        for ns in DEFAULT_NAMESPACES:
             try:
                 items = app.vault.list_items(ns)
                 for item in items:
                     self._all_items.append((ns, item))
-            except Exception:
+            except FileNotFoundError:
                 pass
+            except Exception as e:
+                self.notify(f"Error loading namespace '{ns}': {e}", severity="warning")
         self._populate_table(self._all_items)
         self.query_one("#status-bar", Static).update(
             f"{len(self._all_items)} entries loaded"
@@ -108,7 +124,8 @@ class VaultScreen(Screen):
         try:
             data = self.app.vault.load(ns, item_id)
             self.query_one("#detail-label", Label).update(f"[bold]{ns}/{item_id}[/]")
-            self.query_one("#detail-content", Static).update(json.dumps(data, indent=2))
+            display = json.dumps(data, indent=2)
+            self.query_one("#detail-content", Static).update(display)
         except Exception as e:
             self.query_one("#detail-content", Static).update(f"[red]Error: {e}[/]")
 
@@ -157,6 +174,31 @@ class VaultScreen(Screen):
 
     def action_go_back(self):
         self.app.pop_screen()
+
+    def action_generate(self):
+        from aegis.tui.screens.generator import GeneratorScreen
+        self.app.push_screen(GeneratorScreen())
+
+    @on(Button.Pressed, "#copy-btn")
+    def copy_entry_value(self):
+        if not self._selected:
+            self.notify("Select an entry first", severity="warning")
+            return
+        ns, item_id = self._selected
+        try:
+            data = self.app.vault.load(ns, item_id)
+            text = json.dumps(data, indent=2)
+            try:
+                import pyperclip
+                pyperclip.copy(text)
+                self.notify(f"Copied {ns}/{item_id} to clipboard. Clears in 30s.", severity="success")
+                timer = threading.Timer(30.0, lambda: pyperclip.copy(""))
+                timer.daemon = True
+                timer.start()
+            except ImportError:
+                self.notify(text, title=f"{ns}/{item_id}")
+        except Exception as e:
+            self.notify(f"Copy failed: {e}", severity="error")
 
 
 class DeleteConfirmScreen(ModalScreen):
@@ -243,10 +285,9 @@ class NewItemScreen(Screen):
     BINDINGS = [Binding("escape", "go_back", "Back")]
 
     def compose(self) -> ComposeResult:
-        from textual.widgets import Select
         yield Label("[bold]New Entry[/]")
         yield Select(
-            [(ns, ns) for ns in ["personal", "work", "archive"]],
+            [(ns, ns) for ns in DEFAULT_NAMESPACES],
             id="ns-select",
             prompt="Namespace",
         )
@@ -264,17 +305,18 @@ class NewItemScreen(Screen):
         super().__init__(**kwargs)
         self._field_count = 1
 
-    def _add_field_row(self):
+    async def _add_field_row(self):
         container = self.query_one("#kv-container")
-        with container:
-            with Horizontal(classes="kv-row"):
-                yield Input(placeholder="Key", classes="kv-key")
-                yield Input(placeholder="Value", classes="kv-val")
-                yield Button("X", classes="kv-del", variant="error")
+        row_count = len(container.query(".kv-row"))
+        row = Horizontal(classes="kv-row")
+        await container.mount(row, before=row_count)
+        await row.mount(Input(placeholder="Key", classes="kv-key"))
+        await row.mount(Input(placeholder="Value", classes="kv-val"))
+        await row.mount(Button("X", classes="kv-del", variant="error"))
 
     @on(Button.Pressed, "#add-field-btn")
-    def add_field(self):
-        self._add_field_row()
+    async def add_field(self):
+        await self._add_field_row()
         self._field_count += 1
 
     @on(Button.Pressed, ".kv-del")
@@ -289,7 +331,7 @@ class NewItemScreen(Screen):
     @on(Button.Pressed, "#save-btn")
     def save_entry(self):
         ns = self.query_one("#ns-select", Select).value
-        if ns is Select.BLANK:
+        if ns is Select.NULL:
             self.notify("Select a namespace", severity="warning")
             return
         item_id = self.query_one("#item-id-input", Input).value.strip()
@@ -310,9 +352,12 @@ class NewItemScreen(Screen):
         if not fields:
             self.notify("Add at least one field", severity="warning")
             return
-        self.app.vault.save(ns, item_id, fields)
-        self.notify(f"Saved {ns}/{item_id}", severity="success")
-        self.app.pop_screen()
+        try:
+            self.app.vault.save(ns, item_id, fields)
+            self.notify(f"Saved {ns}/{item_id}", severity="success")
+            self.app.pop_screen()
+        except Exception as e:
+            self.notify(f"Save failed: {e}", severity="error")
 
     def action_go_back(self):
         self.app.pop_screen()
@@ -350,11 +395,15 @@ class EntryScreen(Screen):
         raw = self.query_one("#entry-data", TextArea).text
         try:
             data = json.loads(raw)
+        except json.JSONDecodeError as e:
+            self.notify(f"Invalid JSON: {e}", severity="error")
+            return
+        try:
             self.app.vault.save(self.namespace, self.item_id, data)
             self.notify("Saved", severity="success")
             self.app.pop_screen()
-        except json.JSONDecodeError as e:
-            self.notify(f"Invalid JSON: {e}", severity="error")
+        except Exception as e:
+            self.notify(f"Save failed: {e}", severity="error")
 
     def action_go_back(self):
         self.app.pop_screen()

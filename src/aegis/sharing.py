@@ -88,13 +88,13 @@ class ShareManager:
             os.fsync(f.fileno())
         os.replace(tmp, self._stanzas_path)
 
-    def generate_keypair(self) -> tuple[str, str]:
+    def generate_keypair(self) -> tuple[str, str, str]:
         priv = X25519PrivateKey.generate()
         pub = priv.public_key()
         priv_hex = priv.private_bytes_raw().hex()
         pub_hex = pub.public_bytes_raw().hex()
         user_id = hashlib.sha256(pub_hex.encode()).hexdigest()[:16]
-        return user_id, pub_hex
+        return user_id, pub_hex, priv_hex
     
     def share_vault(self, user_id: str, pubkey_hex: str,
                 dek: bytes) -> None:

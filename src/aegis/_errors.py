@@ -76,3 +76,6 @@ class PermissionError(AegisError):
 class IntegrityError(AegisError):
     default_message = "Integrity check failed."
     default_code = "integrity_error"
+
+class AuditIntegrityError(AegisError):
+    """Manifest or audit chain integrity violation."""

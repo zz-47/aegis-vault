@@ -7,7 +7,10 @@ from pathlib import Path
 from typing import Optional
 
 from aegis.key_manager import KeyManager
-from aegis._errors import LocalStorageError, ItemNotFoundError, ManifestError
+from aegis._errors import (
+    LocalStorageError, ItemNotFoundError, ManifestError,
+    PermissionError as SealPermissionError,
+)
 
 _MANIFEST_DIR = "keys"
 _MANIFEST_FILE = "manifest.enc"
@@ -24,6 +27,8 @@ class AegisVault:
         km_overrides: Optional[dict] = None,
         secure_delete: bool = True,
         cipher_suite: Optional[str] = None,
+        audit_log: Optional[object] = None,
+        canary_manager: Optional[object] = None,
     ) -> None:
         self._base_path = Path(base_path).resolve()
         self._km = KeyManager(passphrase, overrides=km_overrides, cipher_suite=cipher_suite)
@@ -34,9 +39,19 @@ class AegisVault:
             self._km.derive_master_key()
         self._manifest = self._load_manifest()
         self._manifest_dirty = False
+        self._audit = audit_log
+        self._canary = canary_manager
 
     def _item_path(self, namespace: str, item_id: str) -> Path:
         return self._base_path / namespace / f"{item_id}.enc"
+
+    def _check_canary(self) -> None:
+        if self._canary is not None:
+            self._canary.monitor_once()
+
+    def _log_operation(self, op: str, namespace: str, item_id: str) -> None:
+        if self._audit is not None:
+            self._audit.append(op, namespace, item_id)
 
     def _load_manifest(self) -> dict:
         path = self._keys_dir / _MANIFEST_FILE
@@ -55,6 +70,7 @@ class AegisVault:
         os.replace(tmp, self._keys_dir / _MANIFEST_FILE)
 
     def save(self, namespace: str, item_id: str, data: dict) -> None:
+        self._check_canary()
 
         if namespace not in _NAMESPACES:
             raise LocalStorageError(
@@ -96,7 +112,10 @@ class AegisVault:
             self._save_manifest()
             self._manifest_dirty = False
 
+        self._log_operation("save", namespace, item_id)
+
     def load(self, namespace: str, item_id: str) -> dict:
+        self._check_canary()
 
         if namespace not in _NAMESPACES:
             raise LocalStorageError(
@@ -125,9 +144,12 @@ class AegisVault:
         dek = self._km.get_dek(item_id, self._manifest)
         aad = _AAD_NAMESPACE_PREFIX + f"{namespace}:{item_id}".encode()
         decrypted = self._km._cipher.decrypt_combined(dek, blob, aad)
-        return json.loads(decrypted.decode("utf-8"))
+        result = json.loads(decrypted.decode("utf-8"))
+        self._log_operation("load", namespace, item_id)
+        return result
 
     def delete(self, namespace: str, item_id: str) -> None:
+        self._check_canary()
 
         if namespace not in _NAMESPACES:
             raise LocalStorageError(
@@ -158,6 +180,7 @@ class AegisVault:
             self._manifest_dirty = True
         self._save_manifest()
         self._manifest_dirty = False
+        self._log_operation("delete", namespace, item_id)
 
     def list_items(self, namespace: str) -> list[str]:
 

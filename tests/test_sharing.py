@@ -16,9 +16,10 @@ class TestSharing:
 
     def test_generate_keypair(self):
         mgr = ShareManager(tempfile.mkdtemp())
-        user_id, pub = mgr.generate_keypair()
+        user_id, pub, priv = mgr.generate_keypair()
         assert len(user_id) == 16
         assert len(bytes.fromhex(pub)) == 32
+        assert len(bytes.fromhex(priv)) == 32
 
     def test_wrap_unwrap_roundtrip(self):
         dek = os.urandom(32)
@@ -39,7 +40,7 @@ class TestSharing:
 
     def test_share_unshare(self, vault_path):
         mgr = ShareManager(vault_path)
-        user_id, pub = mgr.generate_keypair()
+        user_id, pub, _priv = mgr.generate_keypair()
         dek = os.urandom(32)
         mgr.share_vault(user_id, pub, dek)
         assert user_id in mgr.list_users()
@@ -48,9 +49,8 @@ class TestSharing:
 
     def test_try_unlock(self, vault_path):
         mgr = ShareManager(vault_path)
-        user_id, pub = mgr.generate_keypair()
+        user_id, pub, priv = mgr.generate_keypair()
         dek = os.urandom(32)
         mgr.share_vault(user_id, pub, dek)
-        priv_hex = os.urandom(32).hex()
-        result = mgr.try_unlock(priv_hex)
-        assert result is None
+        result = mgr.try_unlock(priv)
+        assert result == dek

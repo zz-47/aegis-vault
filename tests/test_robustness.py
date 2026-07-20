@@ -168,7 +168,7 @@ class TestEdgeCases:
 
     def test_shared_vault_unlock_wrong_key(self, vault_path):
         sm = ShareManager(vault_path)
-        user_id, pub_hex = sm.generate_keypair()
+        user_id, pub_hex, _priv = sm.generate_keypair()
         dek = os.urandom(32)
         sm.share_vault(user_id, pub_hex, dek)
         wrong_priv = X25519PrivateKey.generate()

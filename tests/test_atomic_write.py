@@ -73,7 +73,7 @@ class TestAtomicWrite:
 
     def test_no_temp_files_in_sharing_dir(self, vault_path):
         sm = ShareManager(vault_path)
-        user_id, pub_hex = sm.generate_keypair()
+        user_id, pub_hex, _priv = sm.generate_keypair()
         dek = b"\x00" * 32
         sm.share_vault(user_id, pub_hex, dek)
         keys_dir = Path(vault_path) / "keys"
